@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entraînement : Les Puissances</title>
+    <!-- Chargement de Tailwind CSS pour une mise en page fluide et responsive -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Police Inter et JetBrains Mono pour un rendu mathématique clair -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=STIX+Two+Text:ital,wght@0,500;0,700;1,500&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Configuration typographique générale */
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+        }
+
+        /* Police mathématique pour les expressions */
+        .math-expr {
+            font-family: 'STIX Two Text', 'Times New Roman', serif;
+            letter-spacing: 0.02em;
+        }
+
+        /* Style des exposants pour une lisibilité parfaite */
+        .math-expr sup {
+            font-size: 0.68em;
+            line-height: 0;
+            position: relative;
+            vertical-align: baseline;
+            top: -0.52em;
+            margin-left: 1px;
+        }
+
+        /* Rendu propre des fractions en CSS */
+        .fraction {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            vertical-align: middle;
+            margin: 0 0.25rem;
+            font-size: 0.92em;
+        }
+
+        .fraction-num {
+            border-bottom: 1.5px solid currentColor;
+            padding: 0 0.35rem 2px 0.35rem;
+            line-height: 1.1;
+            text-align: center;
+        }
+
+        .fraction-den {
+            padding: 2px 0.35rem 0 0.35rem;
+            line-height: 1.1;
+            text-align: center;
+        }
+
+        /* Effet papier subtil pour la feuille d'exercice */
+        .worksheet-card {
+            background: #ffffff;
+            box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.04);
+            border: 1px solid #e2e8f0;
+        }
+
+        /* Styles spécifiques pour l'impression papier */
+        @media print {
+            body {
+                background-color: #ffffff !important;
+                color: #000000 !important;
+                padding: 0 !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .worksheet-card {
+                box-shadow: none !important;
+                border: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                max-width: 100% !important;
+            }
+            .calc-item {
+                break-inside: avoid;
+                border-color: #cbd5e1 !important;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen py-6 px-4 sm:py-10 sm:px-6">
+
+    <!-- Conteneur principal centré -->
+    <main class="max-w-4xl mx-auto">
+        
+        <!-- Feuille d'exercice -->
+        <section class="worksheet-card rounded-2xl p-6 sm:p-10">
+            
+            <!-- En-tête de la feuille -->
+            <div class="border-b-2 border-slate-100 pb-5 mb-5 flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-2">
+                <div>
+                    <span class="no-print inline-block px-2.5 py-0.5 text-xs font-semibold tracking-wider uppercase text-indigo-700 bg-indigo-50 rounded-full mb-2">
+                        Mathématiques • Entraînement
+                    </span>
+                    <h1 class="text-lg sm:text-xl font-bold text-slate-900">
+                        Exercice d'entraînement — Puissances d'un nombre relatif
+                    </h1>
+                    <p class="text-sm sm:text-base text-slate-600 mt-1">
+                        Recopier et calculer sur le cahier chacune des expressions suivantes (donner l'écriture décimale ou fractionnaire).
+                    </p>
+                </div>
+                <span id="seed-badge" class="no-print text-xs font-mono text-slate-400 shrink-0">
+                    Série #0000
+                </span>
+            </div>
+
+            <!-- Barre d'outils placée juste sous la consigne, au-dessus du calcul A (masquée à l'impression) -->
+            <div class="no-print flex flex-wrap items-center justify-between gap-2.5 mb-6">
+                <div class="flex flex-wrap items-center gap-2.5">
+                    <button id="btn-new" type="button" 
+                        class="inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 rounded-xl shadow-sm transition-colors cursor-pointer">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                        Nouvel énoncé
+                    </button>
+
+                    <button id="btn-toggle-corr" type="button" 
+                        class="inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 active:bg-slate-100 border border-slate-300 rounded-xl shadow-sm transition-colors cursor-pointer">
+                        <svg id="icon-eye" class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                        <span id="text-toggle-corr">Afficher la correction</span>
+                    </button>
+                </div>
+
+                <button id="btn-print" type="button" title="Imprimer la feuille"
+                    class="inline-flex items-center justify-center p-2.5 text-slate-600 bg-white hover:bg-slate-50 border border-slate-300 rounded-xl shadow-sm transition-colors cursor-pointer"
+                    aria-label="Imprimer l'exercice">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Liste des 5 calculs (A, B, C, D, E) -->
+            <div id="exercises-container" class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
+                <!-- Généré dynamiquement par JavaScript -->
+            </div>
+
+            <!-- Section Correction (masquée par défaut) -->
+            <div id="correction-section" class="hidden mt-8 pt-7 border-t-2 border-dashed border-slate-200">
+                <div class="flex items-center gap-2.5 mb-5">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                    <h3 class="text-lg font-bold text-slate-800">Correction détaillée</h3>
+                </div>
+
+                <div id="corrections-container" class="space-y-3.5">
+                    <!-- Généré dynamiquement par JavaScript -->
+                </div>
+
+                <!-- Rappel méthodologique discret en bas de correction -->
+                <div class="mt-6 p-4 bg-slate-50 rounded-xl border border-slate-200/80 text-xs sm:text-sm text-slate-600 space-y-1.5">
+                    <p class="font-semibold text-slate-700">Rappels essentiels :</p>
+                    <ul class="list-disc list-inside space-y-1">
+                        <li><strong>Parenthèses :</strong> <span class="math-expr">(-a)<sup>n</sup></span> applique l'exposant au signe moins, tandis que <span class="math-expr">-a<sup>n</sup> = -(a<sup>n</sup>)</span> conserve le signe moins devant le résultat.</li>
+                        <li><strong>Exposant négatif :</strong> Pour tout nombre <span class="math-expr">a ≠ 0</span>, <span class="math-expr">a<sup>-n</sup> = 1 / a<sup>n</sup></span>.</li>
+                        <li><strong>Exposant zéro :</strong> Pour tout nombre <span class="math-expr">a ≠ 0</span>, <span class="math-expr">a<sup>0</sup> = 1</span>.</li>
+                    </ul>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- Pied de page discret -->
+        <footer class="no-print mt-6 text-center text-xs text-slate-400">
+            Faites les calculs sur votre cahier avant d'afficher la correction.
+        </footer>
+
+    </main>
+
+    <script>
+        /**
+         * Application génératrice d'exercices sur les puissances
+         * Conforme aux règles mathématiques du secondaire (collège/lycée)
+         */
+        (function () {
+            // Éléments du DOM
+            const exercisesContainer = document.getElementById('exercises-container');
+            const correctionsContainer = document.getElementById('corrections-container');
+            const correctionSection = document.getElementById('correction-section');
+            const btnNew = document.getElementById('btn-new');
+            const btnToggleCorr = document.getElementById('btn-toggle-corr');
+            const textToggleCorr = document.getElementById('text-toggle-corr');
+            const btnPrint = document.getElementById('btn-print');
+            const seedBadge = document.getElementById('seed-badge');
+
+            let isCorrectionVisible = false;
+            const LETTERS = ['A', 'B', 'C', 'D', 'E'];
+
+            /**
+             * Retourne un entier aléatoire entre min et max inclus
+             */
+            function randomInt(min, max) {
+                return Math.floor(Math.random() * (max - min + 1)) + min;
+            }
+
+            /**
+             * Formate un entier avec des espaces insécables pour les milliers (norme française)
+             */
+            function formatNumberFR(num) {
+                return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '\u00A0');
+            }
+
+            /**
+             * Vérifie si une fraction 1 / den admet une écriture décimale finie et simple
+             * (c'est-à-dire si les seuls facteurs premiers de den sont 2 et 5, et si le résultat n'est pas trop long)
+             */
+            function getCleanDecimalForUnitFraction(sign, den) {
+                if (den === 1) return sign < 0 ? '-1' : '1';
+                
+                let temp = den;
+                let pow2 = 0;
+                let pow5 = 0;
+                while (temp % 2 === 0) { temp /= 2; pow2++; }
+                while (temp % 5 === 0) { temp /= 5; pow5++; }
+
+                // Si d'autres facteurs premiers existent, l'écriture décimale est infinie
+                if (temp !== 1) return null;
+
+                const maxDecPlaces = Math.max(pow2, pow5);
+                // On affiche la valeur décimale uniquement si elle a au plus 4 chiffres après la virgule
+                if (maxDecPlaces > 4) return null;
+
+                const val = 1 / den;
+                // Évite la notation scientifique et formate avec la virgule française
+                const formatted = val.toFixed(maxDecPlaces).replace('.', ',');
+                return (sign < 0 ? '-' : '') + formatted;
+            }
+
+            /**
+             * Construit le HTML d'une fraction propre
+             */
+            function renderFractionHTML(signStr, numStr, denStr) {
+                return `
+                    <span class="inline-flex items-center">
+                        ${signStr ? `<span class="mr-1">${signStr}</span>` : ''}
+                        <span class="fraction">
+                            <span class="fraction-num">${numStr}</span>
+                            <span class="fraction-den">${denStr}</span>
+                        </span>
+                    </span>
+                `;
+            }
+
+            /**
+             * Génère une chaîne de multiplication répétée (ex: "(-3) × (-3) × (-3)")
+             */
+            function buildProductString(factorStr, count) {
+                return Array(count).fill(factorStr).join(' × ');
+            }
+
+            /**
+             * Génère un calcul de puissance unique avec sa correction détaillée
+             * Variantes de structure :
+             *  - type 1 : a^n        (ex: 5³ ou 5⁻²)
+             *  - type 2 : (-a)^n     (ex: (-5)³ ou (-5)⁻²)
+             *  - type 3 : -a^n       (ex: -5³ ou -5⁻²)
+             *  - type 4 : -(-a)^n    (ex: -(-5)³ ou -(-5)⁻²)
+             */
+            function generateSingleExercise(letter, usedSignatures) {
+                let base, exp, variant, signature;
+
+                // Boucle pour garantir 5 calculs distincts dans la même série
+                do {
+                    base = randomInt(0, 15);
+                    
+                    // Si la base est 0, l'exposant doit être strictement positif (>= 1)
+                    // pour éviter 0^0 ou la division par zéro 0^(-n)
+                    if (base === 0) {
+                        exp = randomInt(1, 4);
+                        // Avec 0, on évite les formes inutilement lourdes comme -(-0)^2
+                        variant = randomInt(1, 3);
+                    } else {
+                        exp = randomInt(-4, 4);
+                        // Répartition équilibrée des pièges classiques de signes et parenthèses
+                        const roll = Math.random();
+                        if (roll < 0.30) variant = 1;       // a^n
+                        else if (roll < 0.60) variant = 2;  // (-a)^n
+                        else if (roll < 0.85) variant = 3;  // -a^n
+                        else variant = 4;                   // -(-a)^n
+                    }
+
+                    signature = `${variant}_${base}_${exp}`;
+                } while (usedSignatures.has(signature));
+
+                usedSignatures.add(signature);
+
+                // Construction de l'énoncé HTML
+                let expressionHTML = '';
+                switch (variant) {
+                    case 1:
+                        expressionHTML = `${base}<sup>${exp}</sup>`;
+                        break;
+                    case 2:
+                        expressionHTML = `(${base === 0 ? '0' : '-' + base})<sup>${exp}</sup>`;
+                        break;
+                    case 3:
+                        expressionHTML = `-${base}<sup>${exp}</sup>`;
+                        break;
+                    case 4:
+                        expressionHTML = `-(${base === 0 ? '0' : '-' + base})<sup>${exp}</sup>`;
+                        break;
+                }
+
+                // Calcul mathématique exact et génération des étapes de correction
+                const absExp = Math.abs(exp);
+                const absPowValue = Math.pow(base, absExp); // Valeur entière exacte (max 15^4 = 50625)
+                const formattedAbsPow = formatNumberFR(absPowValue);
+
+                // Détermination du signe final du résultat
+                let finalSign = 1; // 1 pour positif, -1 pour négatif
+                if (base === 0) {
+                    finalSign = 1; // 0^n = 0 (pour n >= 1)
+                } else {
+                    const isOdd = (absExp % 2 !== 0);
+                    if (variant === 1) {
+                        finalSign = 1;
+                    } else if (variant === 2) {
+                        finalSign = isOdd ? -1 : 1;
+                    } else if (variant === 3) {
+                        finalSign = -1;
+                    } else if (variant === 4) {
+                        finalSign = isOdd ? 1 : -1;
+                    }
+                }
+
+                // Construction de l'étape intermédiaire (avec produits si |n| >= 2) et du résultat final
+                let stepsHTML = '';
+                const signPrefix = finalSign < 0 ? '-' : '';
+
+                if (base === 0) {
+                    // Cas particulier base = 0 (exposant >= 1)
+                    if (exp === 1) {
+                        stepsHTML = `<span class="font-bold text-emerald-700">0</span>`;
+                    } else {
+                        const prodZero = buildProductString('0', exp);
+                        const prodStep = variant === 3 ? `-(${prodZero})` : prodZero;
+                        stepsHTML = `<span class="text-slate-600">${prodStep} = </span><span class="font-bold text-emerald-700">0</span>`;
+                    }
+                } else if (exp === 0) {
+                    // Cas particulier exposant = 0 (base != 0) : règle directe sans produit
+                    if (variant === 1 || variant === 2) {
+                        stepsHTML = `<span class="font-bold text-emerald-700">1</span>`;
+                    } else if (variant === 3) {
+                        stepsHTML = `<span class="text-slate-600">-(${base}<sup>0</sup>) = </span><span class="font-bold text-emerald-700">-1</span>`;
+                    } else if (variant === 4) {
+                        stepsHTML = `<span class="text-slate-600">-((-${base})<sup>0</sup>) = </span><span class="font-bold text-emerald-700">-1</span>`;
+                    }
+                } else if (exp === 1) {
+                    // Cas particulier exposant = 1 : règle directe sans produit
+                    if (variant === 1) {
+                        stepsHTML = `<span class="font-bold text-emerald-700">${base}</span>`;
+                    } else if (variant === 2 || variant === 3) {
+                        stepsHTML = `<span class="font-bold text-emerald-700">-${base}</span>`;
+                    } else if (variant === 4) {
+                        stepsHTML = `<span class="text-slate-600">-(-${base}) = </span><span class="font-bold text-emerald-700">${base}</span>`;
+                    }
+                } else if (exp >= 2) {
+                    // Exposant positif >= 2 : développement systématique en produit de facteurs
+                    if (variant === 1) {
+                        const prod = buildProductString(`${base}`, exp);
+                        stepsHTML = `<span class="text-slate-600">${prod} = </span><span class="font-bold text-emerald-700">${formattedAbsPow}</span>`;
+                    } else if (variant === 2) {
+                        const prod = buildProductString(`(-${base})`, exp);
+                        stepsHTML = `<span class="text-slate-600">${prod} = </span><span class="font-bold text-emerald-700">${signPrefix}${formattedAbsPow}</span>`;
+                    } else if (variant === 3) {
+                        const prod = buildProductString(`${base}`, exp);
+                        stepsHTML = `<span class="text-slate-600">-(${prod}) = </span><span class="font-bold text-emerald-700">-${formattedAbsPow}</span>`;
+                    } else if (variant === 4) {
+                        const prod = buildProductString(`(-${base})`, exp);
+                        const innerVal = (exp % 2 !== 0) ? `-${formattedAbsPow}` : `${formattedAbsPow}`;
+                        stepsHTML = `<span class="text-slate-600">-(${prod}) = -(${innerVal}) = </span><span class="font-bold text-emerald-700">${signPrefix}${formattedAbsPow}</span>`;
+                    }
+                } else {
+                    // Exposant strictement négatif (-1 à -4)
+                    const finalFraction = renderFractionHTML(signPrefix, '1', formattedAbsPow);
+                    const decimalEquivalent = getCleanDecimalForUnitFraction(finalSign, absPowValue);
+                    const decimalPart = decimalEquivalent 
+                        ? `<span class="text-slate-600">=</span><span class="font-bold text-emerald-700">${decimalEquivalent}</span>`
+                        : '';
+
+                    if (exp === -1) {
+                        // Exposant égal à -1 : passage à l'inverse directement sans produit inutile
+                        let inverseStep = '';
+                        if (variant === 1) {
+                            inverseStep = renderFractionHTML('', '1', `${base}`);
+                            stepsHTML = `<span class="inline-flex items-center font-bold text-emerald-700">${inverseStep}</span>${decimalPart}`;
+                        } else if (variant === 2) {
+                            inverseStep = renderFractionHTML('', '1', `(-${base})`);
+                            stepsHTML = `<span class="inline-flex items-center text-slate-600">${inverseStep}<span class="mx-1.5">=</span></span><span class="inline-flex items-center font-bold text-emerald-700">${finalFraction}</span>${decimalPart}`;
+                        } else if (variant === 3) {
+                            inverseStep = renderFractionHTML('-', '1', `${base}`);
+                            stepsHTML = `<span class="inline-flex items-center font-bold text-emerald-700">${inverseStep}</span>${decimalPart}`;
+                        } else if (variant === 4) {
+                            inverseStep = renderFractionHTML('-', '1', `(-${base})`);
+                            stepsHTML = `<span class="inline-flex items-center text-slate-600">${inverseStep}<span class="mx-1.5">=</span></span><span class="inline-flex items-center font-bold text-emerald-700">${finalFraction}</span>${decimalPart}`;
+                        }
+                    } else {
+                        // Exposant <= -2 : passage à l'inverse puis produit au dénominateur
+                        let stepInverse = '';
+                        let stepProductDenom = '';
+
+                        if (variant === 1) {
+                            stepInverse = renderFractionHTML('', '1', `${base}<sup>${absExp}</sup>`);
+                            stepProductDenom = renderFractionHTML('', '1', buildProductString(`${base}`, absExp));
+                        } else if (variant === 2) {
+                            stepInverse = renderFractionHTML('', '1', `(-${base})<sup>${absExp}</sup>`);
+                            stepProductDenom = renderFractionHTML('', '1', buildProductString(`(-${base})`, absExp));
+                        } else if (variant === 3) {
+                            stepInverse = renderFractionHTML('-', '1', `${base}<sup>${absExp}</sup>`);
+                            stepProductDenom = renderFractionHTML('-', '1', buildProductString(`${base}`, absExp));
+                        } else if (variant === 4) {
+                            stepInverse = renderFractionHTML('-', '1', `(-${base})<sup>${absExp}</sup>`);
+                            stepProductDenom = renderFractionHTML('-', '1', buildProductString(`(-${base})`, absExp));
+                        }
+
+                        stepsHTML = `
+                            <span class="inline-flex items-center text-slate-600">${stepInverse}</span>
+                            <span class="text-slate-600">=</span>
+                            <span class="inline-flex items-center text-slate-600">${stepProductDenom}</span>
+                            <span class="text-slate-600">=</span>
+                            <span class="inline-flex items-center font-bold text-emerald-700">${finalFraction}</span>
+                            ${decimalPart}
+                        `;
+                    }
+                }
+
+                return {
+                    letter,
+                    expressionHTML,
+                    stepsHTML
+                };
+            }
+
+            /**
+             * Génère et affiche une nouvelle série de 5 exercices (A à E)
+             */
+            function renderNewWorksheet() {
+                const usedSignatures = new Set();
+                const exercises = LETTERS.map(letter => generateSingleExercise(letter, usedSignatures));
+
+                // Réinitialisation de l'affichage de la correction
+                isCorrectionVisible = false;
+                correctionSection.classList.add('hidden');
+                textToggleCorr.textContent = 'Afficher la correction';
+
+                // Numéro de série aléatoire à 4 chiffres
+                const seriesNumber = randomInt(1000, 9999);
+                seedBadge.textContent = `Série #${seriesNumber}`;
+
+                // Injection des énoncés (A à E)
+                exercisesContainer.innerHTML = exercises.map(ex => `
+                    <div class="calc-item flex items-center gap-4 p-4 sm:p-5 rounded-xl bg-slate-50/70 border border-slate-200/90">
+                        <span class="flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-100 text-indigo-700 font-bold text-sm shrink-0">
+                            ${ex.letter}
+                        </span>
+                        <div class="math-expr text-xl sm:text-2xl text-slate-900">
+                            ${ex.letter} = ${ex.expressionHTML}
+                        </div>
+                    </div>
+                `).join('');
+
+                // Injection des corrections détaillées
+                correctionsContainer.innerHTML = exercises.map(ex => `
+                    <div class="calc-item flex flex-wrap items-center gap-x-3 gap-y-2 p-3.5 sm:p-4 rounded-xl bg-emerald-50/40 border border-emerald-200/80">
+                        <span class="flex items-center justify-center w-7 h-7 rounded-lg bg-emerald-100 text-emerald-800 font-bold text-xs shrink-0">
+                            ${ex.letter}
+                        </span>
+                        <div class="math-expr text-base sm:text-lg text-slate-800 flex flex-wrap items-center gap-x-2 gap-y-2">
+                            <span class="inline-flex items-center">${ex.letter} = ${ex.expressionHTML}</span>
+                            <span>=</span>
+                            ${ex.stepsHTML}
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            /**
+             * Bascule l'affichage de la section correction
+             */
+            function toggleCorrection() {
+                isCorrectionVisible = !isCorrectionVisible;
+                if (isCorrectionVisible) {
+                    correctionSection.classList.remove('hidden');
+                    textToggleCorr.textContent = 'Masquer la correction';
+                } else {
+                    correctionSection.classList.add('hidden');
+                    textToggleCorr.textContent = 'Afficher la correction';
+                }
+            }
+
+            // Écouteurs d'événements
+            btnNew.addEventListener('click', renderNewWorksheet);
+            btnToggleCorr.addEventListener('click', toggleCorrection);
+            btnPrint.addEventListener('click', () => window.print());
+
+            // Génération initiale au chargement de la page
+            renderNewWorksheet();
+        })();
+    </script>
+</body>
+</html>
